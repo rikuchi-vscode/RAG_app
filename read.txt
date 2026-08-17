@@ -1,0 +1,27 @@
+目的
+### 半導体工学や電磁気学などの難解な講義資料やPDF論文を読み込ませて、独自の知識ベースから専門用語の解説や試験対策をサポートしてくれる「専門領域特化型Q&Aボット（RAGアプリ）」の作成
+
+技術スタック・役割
+# フロントエンド： Streamlit
+# LLM (生成AI)： OpenAI API(ここでは、Google Gemini API)
+# AI連携フレームワーク： LangChain
+# ベクトルデータベース： FAISS または ChromaDB
+
+開発ステップ
+1. 環境構築とAPIキーの取得
+Python環境に streamlit, langchain, openai, faiss-cpu, pypdf などの必要なライブラリをインストールします。また、OpenAIの公式サイトからAPIキーを取得し、環境変数に設定します。
+
+2. 資料の読み込みと分割 (Chunking)
+LangChain: PyPDFLoader, RecursiveCharacterTextSplitter
+分厚い専門書や講義資料をそのままAIに渡すと文字数制限（トークン上限）に引っかかるため、意味が通じる数段落ずつ（例: 500〜1000文字単位）にテキストを分割します。
+
+3. テキストのベクトル化とデータベース保存
+OpenAI Embeddings + FAISS
+分割したテキストを、AIが意味を理解できる「数値の配列（ベクトル）」に変換し、データベースに保存します。これにより、キーワードの完全一致ではなく「意味が近い文章」を検索できるようになります。
+
+4. RAGロジックの実装
+ユーザーが質問を入力した際、「1. データベースから関連するテキストを検索」「2. 検索したテキストと質問をセットにしてOpenAI APIに送信」「3. 資料に基づいた回答を生成」という一連の流れ（チェーン）をLangChainで記述します。
+
+5. StreamlitでのUI構築
+st.chat_message, st.chat_input
+StreamlitのチャットUI用コンポーネントを使います。Pythonコードを数十行書くだけで、ChatGPTのような対話画面がブラウザ上に完成します。

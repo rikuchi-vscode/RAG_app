@@ -1,0 +1,24 @@
+# Environment variables
+.env
+
+# Python cache & virtual environment
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+env/
+
+# Vector store data
+faiss_index/
+chroma_db/
+*.faiss
+*.pkl
+
+# Uploaded documents
+data/
+*.pdf
+
+# Logs & Runtime status
+logs/
+*.log
+
