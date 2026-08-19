@@ -8,8 +8,31 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # APIキーの取得
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
+def _get_api_key(key: str) -> str:
+    """
+    環境変数（.env含む）または Streamlit Secrets (st.secrets) からAPIキーを安全に取得する
+    """
+    # 1. 環境変数の確認
+    val = os.getenv(key, "").strip()
+    if val and not val.startswith("your_"):
+        return val
+
+    # 2. Streamlit secrets の確認
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets") and key in st.secrets:
+            secret_val = str(st.secrets[key]).strip()
+            if secret_val and not secret_val.startswith("your_"):
+                # ライブラリ内部のos.environ参照にも対応できるように同期
+                os.environ[key] = secret_val
+                return secret_val
+    except Exception:
+        pass
+
+    return val
+
+OPENAI_API_KEY = _get_api_key("OPENAI_API_KEY")
+GOOGLE_API_KEY = _get_api_key("GOOGLE_API_KEY")
 
 def get_available_llm_provider() -> str:
     """
@@ -28,7 +51,7 @@ def validate_environment():
     """
     provider = get_available_llm_provider()
     if provider == "none":
-        print("[WARNING] 有効なAPIキー (OPENAI_API_KEY または GOOGLE_API_KEY) が .env に設定されていません。")
+        print("[WARNING] 有効なAPIキー (OPENAI_API_KEY または GOOGLE_API_KEY) が .env または st.secrets に設定されていません。")
     else:
         print(f"[OK] LLMプロバイダ '{provider}' のAPIキーが検出されました。")
     return provider
