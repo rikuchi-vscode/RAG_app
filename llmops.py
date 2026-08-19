@@ -16,7 +16,13 @@ from typing import List, Dict, Any, Optional, Tuple
 import pandas as pd
 from dotenv import load_dotenv
 
-from config import OPENAI_API_KEY, GOOGLE_API_KEY, get_available_llm_provider
+from config import (
+    OPENAI_API_KEY,
+    GOOGLE_API_KEY,
+    get_openai_api_key,
+    get_google_api_key,
+    get_available_llm_provider
+)
 from logger import get_logger
 
 logger = get_logger()
@@ -270,7 +276,7 @@ class RAGQualityJudge:
         if self.provider == "gemini":
             from google import genai
             from google.genai import types
-            client = genai.Client(api_key=GOOGLE_API_KEY)
+            client = genai.Client(api_key=get_google_api_key())
             candidate_models = [
                 "gemini-3.5-flash-lite",
                 "gemini-3.1-flash-lite",
@@ -293,7 +299,7 @@ class RAGQualityJudge:
         elif self.provider == "openai":
             from langchain_openai import ChatOpenAI
             from langchain_core.messages import HumanMessage
-            chat = ChatOpenAI(model="gpt-4o-mini", temperature=0.1, openai_api_key=OPENAI_API_KEY)
+            chat = ChatOpenAI(model="gpt-4o-mini", temperature=0.1, openai_api_key=get_openai_api_key())
             res = chat.invoke([HumanMessage(content=prompt)])
             return res.content.strip()
         return "{}"

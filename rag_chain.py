@@ -11,7 +11,13 @@ from langchain_core.documents import Document
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_core.output_parsers import StrOutputParser
 
-from config import OPENAI_API_KEY, GOOGLE_API_KEY, get_available_llm_provider
+from config import (
+    OPENAI_API_KEY,
+    GOOGLE_API_KEY,
+    get_openai_api_key,
+    get_google_api_key,
+    get_available_llm_provider
+)
 from vector_store import build_or_load_vector_store, FAISS
 from logger import get_logger
 
@@ -39,7 +45,7 @@ def get_llm(model_name: Optional[str] = None, temperature: float = 0.2) -> BaseC
             return ChatOpenAI(
                 model=selected_model,
                 temperature=temperature,
-                openai_api_key=OPENAI_API_KEY,
+                openai_api_key=get_openai_api_key(),
                 max_retries=3
             )
         elif provider == "gemini":
@@ -49,7 +55,7 @@ def get_llm(model_name: Optional[str] = None, temperature: float = 0.2) -> BaseC
             return ChatGoogleGenerativeAI(
                 model=selected_model,
                 temperature=temperature,
-                google_api_key=GOOGLE_API_KEY,
+                google_api_key=get_google_api_key(),
                 max_retries=2
             )
         else:

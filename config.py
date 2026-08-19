@@ -34,14 +34,42 @@ def _get_api_key(key: str) -> str:
 OPENAI_API_KEY = _get_api_key("OPENAI_API_KEY")
 GOOGLE_API_KEY = _get_api_key("GOOGLE_API_KEY")
 
+def get_openai_api_key() -> str:
+    """最新のOpenAI APIキーを取得する"""
+    global OPENAI_API_KEY
+    val = _get_api_key("OPENAI_API_KEY")
+    if val:
+        OPENAI_API_KEY = val
+    return OPENAI_API_KEY
+
+def get_google_api_key() -> str:
+    """最新のGoogle APIキーを取得する"""
+    global GOOGLE_API_KEY
+    val = _get_api_key("GOOGLE_API_KEY")
+    if val:
+        GOOGLE_API_KEY = val
+    return GOOGLE_API_KEY
+
+def set_custom_api_key(key_name: str, key_value: str):
+    """ブラウザ上などで手動入力されたAPIキーを動的に設定・反映する"""
+    global OPENAI_API_KEY, GOOGLE_API_KEY
+    clean_val = key_value.strip()
+    os.environ[key_name] = clean_val
+    if key_name == "OPENAI_API_KEY":
+        OPENAI_API_KEY = clean_val
+    elif key_name == "GOOGLE_API_KEY":
+        GOOGLE_API_KEY = clean_val
+
 def get_available_llm_provider() -> str:
     """
     設定されているAPIキーに基づいて利用可能なLLMプロバイダを判定して返す
     戻り値: 'openai', 'gemini', または 'none'
     """
-    if OPENAI_API_KEY and not OPENAI_API_KEY.startswith("your_"):
+    o_key = get_openai_api_key()
+    g_key = get_google_api_key()
+    if o_key and not o_key.startswith("your_"):
         return "openai"
-    elif GOOGLE_API_KEY and not GOOGLE_API_KEY.startswith("your_"):
+    elif g_key and not g_key.startswith("your_"):
         return "gemini"
     return "none"
 

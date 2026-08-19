@@ -11,7 +11,14 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pypdf import PdfReader
 
-from config import OPENAI_API_KEY, GOOGLE_API_KEY, get_available_llm_provider
+from config import (
+    OPENAI_API_KEY,
+    GOOGLE_API_KEY,
+    get_openai_api_key,
+    get_google_api_key,
+    set_custom_api_key,
+    get_available_llm_provider
+)
 from document_loader import load_and_split_documents
 from vector_store import (
     build_or_load_vector_store,
@@ -113,6 +120,12 @@ def init_session():
         st.session_state.session_initialized = True
         system_logger.info("新規Streamlitユーザーセッションが開始されました。")
         check_memory_usage(threshold_percent=80.0, context="新規セッション初期化")
+
+    if st.session_state.get("custom_api_key_set"):
+        if st.session_state.get("custom_google_api_key"):
+            set_custom_api_key("GOOGLE_API_KEY", st.session_state.custom_google_api_key)
+        if st.session_state.get("custom_openai_api_key"):
+            set_custom_api_key("OPENAI_API_KEY", st.session_state.custom_openai_api_key)
 
     if "messages" not in st.session_state:
         st.session_state.messages = [
@@ -299,10 +312,56 @@ def main():
         # APIステータス表示
         if provider == "gemini":
             st.success("🟢 Google Gemini API 接続中")
+            if st.session_state.get("custom_api_key_set"):
+                if st.button("🔄 設定したキーをクリア", key="btn_clear_custom_key", use_container_width=True):
+                    st.session_state.custom_google_api_key = ""
+                    st.session_state.custom_openai_api_key = ""
+                    st.session_state.custom_api_key_set = False
+                    set_custom_api_key("GOOGLE_API_KEY", "")
+                    set_custom_api_key("OPENAI_API_KEY", "")
+                    st.toast("設定したAPIキーをクリアしました。")
+                    st.rerun()
         elif provider == "openai":
             st.success("🟢 OpenAI API 接続中")
+            if st.session_state.get("custom_api_key_set"):
+                if st.button("🔄 設定したキーをクリア", key="btn_clear_custom_key", use_container_width=True):
+                    st.session_state.custom_google_api_key = ""
+                    st.session_state.custom_openai_api_key = ""
+                    st.session_state.custom_api_key_set = False
+                    set_custom_api_key("GOOGLE_API_KEY", "")
+                    set_custom_api_key("OPENAI_API_KEY", "")
+                    st.toast("設定したAPIキーをクリアしました。")
+                    st.rerun()
         else:
-            st.error("🔴 APIキーが未設定です。`.env` を設定してください。")
+            st.error("🔴 APIキーが未設定です。")
+            with st.container(border=True):
+                st.markdown("##### 🔑 APIキーの手動入力")
+                st.caption(".env や Secrets が未設定の場合は以下に入力してください。")
+                api_choice = st.radio("利用するプロバイダ", ["Google Gemini", "OpenAI"], horizontal=True, key="sidebar_api_choice")
+                if api_choice == "Google Gemini":
+                    input_gemini = st.text_input("Google API Key", type="password", placeholder="AIzaSy...", key="input_sidebar_gemini")
+                    if st.button("設定して接続", key="btn_apply_sidebar_gemini", use_container_width=True):
+                        if input_gemini.strip():
+                            st.session_state.custom_google_api_key = input_gemini.strip()
+                            st.session_state.custom_api_key_set = True
+                            set_custom_api_key("GOOGLE_API_KEY", input_gemini.strip())
+                            system_logger.info("ブラウザ上からGoogle Gemini APIキーが設定されました。")
+                            st.toast("Google Gemini APIキーを設定しました！", icon="🟢")
+                            st.rerun()
+                        else:
+                            st.warning("APIキーを入力してください。")
+                else:
+                    input_openai = st.text_input("OpenAI API Key", type="password", placeholder="sk-...", key="input_sidebar_openai")
+                    if st.button("設定して接続", key="btn_apply_sidebar_openai", use_container_width=True):
+                        if input_openai.strip():
+                            st.session_state.custom_openai_api_key = input_openai.strip()
+                            st.session_state.custom_api_key_set = True
+                            set_custom_api_key("OPENAI_API_KEY", input_openai.strip())
+                            system_logger.info("ブラウザ上からOpenAI APIキーが設定されました。")
+                            st.toast("OpenAI APIキーを設定しました！", icon="🟢")
+                            st.rerun()
+                        else:
+                            st.warning("APIキーを入力してください。")
 
         st.markdown("---")
         st.subheader("📚 登録済みの講義・リサーチ資料")

@@ -7,7 +7,13 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_community.vectorstores import FAISS
 
-from config import OPENAI_API_KEY, GOOGLE_API_KEY, get_available_llm_provider
+from config import (
+    OPENAI_API_KEY,
+    GOOGLE_API_KEY,
+    get_openai_api_key,
+    get_google_api_key,
+    get_available_llm_provider
+)
 from document_loader import load_and_split_documents
 from logger import get_logger, check_memory_usage
 
@@ -28,14 +34,14 @@ def get_embedding_model() -> Embeddings:
             logger.info("Embeddingモデルを初期化: OpenAI (text-embedding-3-small)")
             return OpenAIEmbeddings(
                 model="text-embedding-3-small",
-                openai_api_key=OPENAI_API_KEY
+                openai_api_key=get_openai_api_key()
             )
         elif provider == "gemini":
             from langchain_google_genai import GoogleGenerativeAIEmbeddings
             logger.info("Embeddingモデルを初期化: Google Gemini (models/gemini-embedding-001)")
             return GoogleGenerativeAIEmbeddings(
                 model="models/gemini-embedding-001",
-                google_api_key=GOOGLE_API_KEY
+                google_api_key=get_google_api_key()
             )
         else:
             err_msg = "有効なAPIキーが設定されていません。.env に OPENAI_API_KEY または GOOGLE_API_KEY を設定してください。"

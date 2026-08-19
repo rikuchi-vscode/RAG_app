@@ -12,7 +12,13 @@ from dotenv import load_dotenv
 
 warnings.filterwarnings("ignore")
 
-from config import OPENAI_API_KEY, GOOGLE_API_KEY, get_available_llm_provider
+from config import (
+    OPENAI_API_KEY,
+    GOOGLE_API_KEY,
+    get_openai_api_key,
+    get_google_api_key,
+    get_available_llm_provider
+)
 from logger import get_logger
 
 logger = get_logger()
@@ -60,7 +66,7 @@ class WebResearchAgent:
             from google import genai
             from google.genai import types
 
-            client = genai.Client(api_key=GOOGLE_API_KEY)
+            client = genai.Client(api_key=get_google_api_key())
             models_to_try = [self.model_name] if self.model_name else GEMINI_MODELS
             last_error = None
 
@@ -96,7 +102,7 @@ class WebResearchAgent:
                 chat = ChatOpenAI(
                     model=selected_model,
                     temperature=0.3,
-                    openai_api_key=OPENAI_API_KEY
+                    openai_api_key=get_openai_api_key()
                 )
                 messages = []
                 if system_instruction:
